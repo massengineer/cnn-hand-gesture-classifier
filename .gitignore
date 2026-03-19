@@ -32,18 +32,6 @@ hand_gesture_dataset_raw/
 *.log
 *.sqlite3
 
-# Model and dataset artifacts (optional - large files)
-hand_gesture_dataset_processed/
-*.keras
-hand_gesture_model.keras
-hand_gesture_model_best.keras
-classification_report.txt
-loss_curve.png
-accuracy_curve.png
-confusion_matrix.png
-confusion_matrix_normalized.png
-class_indices.json
-
 # OS / others
 Thumbs.db
 *.bak
