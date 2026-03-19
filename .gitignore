@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+env/
+.venv/
+computer_vision_speed_control/Lib/
+computer_vision_speed_control/Scripts/
+computer_vision_speed_control/Include/
+
+# Ignore the massive ZIP and raw images
+*.zip
+hand_gesture_dataset_raw/
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter
+.ipynb_checkpoints
+
+# macOS
+.DS_Store
+
+# Logs and databases
+*.log
+*.sqlite3
+
+# Model and dataset artifacts (optional - large files)
+hand_gesture_dataset_processed/
+*.keras
+hand_gesture_model.keras
+hand_gesture_model_best.keras
+classification_report.txt
+loss_curve.png
+accuracy_curve.png
+confusion_matrix.png
+confusion_matrix_normalized.png
+class_indices.json
+
+# OS / others
+Thumbs.db
+*.bak
+*.tmp
+
+# OneDrive temp files
+~$*
