@@ -66,7 +66,7 @@ for set_name, images_set, labels_set in sets_to_save:
         os.makedirs(label_dir, exist_ok=True)
         
         # Convert back to 0-255 for saving
-        save_img = (img * 255).astype(np.uint8)
+        save_img = img.astype(np.uint8)
         filename = f"{i}.jpg"
         cv2.imwrite(os.path.join(label_dir, filename), save_img)
 
