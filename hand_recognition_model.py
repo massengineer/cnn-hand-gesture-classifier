@@ -18,9 +18,14 @@ val_dir = os.path.join(dataset_path, "val")
 test_dir = os.path.join(dataset_path, "test")
 
 # Create ImageDataGenerators (rescale because processed images were saved as uint8 0-255)
-train_datagen = ImageDataGenerator()
-val_datagen = ImageDataGenerator()
-test_datagen = ImageDataGenerator() 
+train_datagen = ImageDataGenerator(rescale=1./255,
+                                   rotation_range=20,         # Help with tilted hand gestures
+                                   width_shift_range=0.1,     # Hand isn't always perfectly centered
+                                   height_shift_range=0.1,
+                                   zoom_range=0.1,            # Different distances from camera
+                                   brightness_range=[0.8, 1.2])
+val_datagen = ImageDataGenerator(rescale=1./255)
+test_datagen = ImageDataGenerator(rescale=1./255)
 
 # Load data in batches
 train_data = train_datagen.flow_from_directory(
@@ -59,26 +64,26 @@ with open(os.path.join(BASE_DIR, "class_indices.json"), "w") as f:
 
 model = models.Sequential([
     # 1. Input Layer + First Convolution
-    # Using BatchNormalization after pool for stable training
-    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(50, 50, 1)),
-    layers.MaxPooling2D((2, 2)),
+    layers.Input(shape=(50, 50, 1)),  # Grayscale images have 1 channel
+    layers.Conv2D(32, (3, 3), activation='relu'),
     layers.BatchNormalization(),
+    layers.MaxPooling2D((2, 2)),
 
     # 2. Second Convolution (extracts more complex features)
     layers.Conv2D(64, (3, 3), activation='relu'),
-    layers.MaxPooling2D((2, 2)),
     layers.BatchNormalization(),
+    layers.MaxPooling2D((2, 2)),
 
     # 3. Third Convolution
-    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.Conv2D(128, (3, 3), activation='relu'),
     layers.BatchNormalization(),
 
-    # 4. Flattening (converts 2D features into a 1D vector for the classifier)
-    layers.Flatten(),
+    # 4. Global Average Pooling (reduces parameters and overfitting risk)
+    layers.GlobalAveragePooling2D(),  # More efficient than Flatten for small images
 
     # 5. Dense Layers (The Classifier)
-    layers.Dense(64, activation='relu'),
-    layers.Dropout(0.5),
+    layers.Dense(128, activation='relu'),
+    layers.Dropout(0.6),
 
     # 6. Output Layer
     # Use 'softmax' for multi-class classification
@@ -105,7 +110,7 @@ print("\nTraining the model...")
 history = model.fit(
     train_data,
     validation_data=val_data,
-    epochs=20,
+    epochs=50,
     callbacks=callbacks,
     verbose=1
 )

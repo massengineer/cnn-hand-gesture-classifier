@@ -46,10 +46,6 @@ X_val, X_test, y_val, y_test = train_test_split(
     X_rest, y_rest, test_size=0.333, random_state=42, stratify=y_rest
 )
 
-# # 5. Preprocessing (Data Augmentation) - Applied ONLY to Train Set but at the moment I have not implemented any augmentation techniques, so I will just duplicate the training data to increase its size by 40%
-# X_train_final = np.concatenate((X_train, X_train))
-# y_train_final = np.concatenate((y_train, y_train))
-
 # --- VISUAL EXPORT: Saving to Respective Directories ---
 print(f"\nExporting processed images to {output_path}...")
 
