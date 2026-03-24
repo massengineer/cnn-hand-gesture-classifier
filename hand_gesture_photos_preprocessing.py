@@ -29,10 +29,10 @@ for root, dirs, files in os.walk(raw_dir):
                 img_array = np.array(pil_img)
                 img_resized = cv2.resize(img_array, (50, 50))
                 
-                # Normalizing pixel values to (0,1) range
-                img_normalized = img_resized / 255.0
+                # # Normalizing pixel values to (0,1) range
+                # img_normalized = img_resized / 255.0
                 
-                images.append(img_normalized)
+                images.append(img_resized)
                 labels.append(label)
             except Exception as e:
                 print(f"Error processing {filename}: {e}")

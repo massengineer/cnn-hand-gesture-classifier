@@ -18,12 +18,7 @@ val_dir = os.path.join(dataset_path, "val")
 test_dir = os.path.join(dataset_path, "test")
 
 # Create ImageDataGenerators (rescale because processed images were saved as uint8 0-255)
-train_datagen = ImageDataGenerator(rescale=1./255,
-                                   rotation_range=20,         # Help with tilted hand gestures
-                                   width_shift_range=0.1,     # Hand isn't always perfectly centered
-                                   height_shift_range=0.1,
-                                   zoom_range=0.1,            # Different distances from camera
-                                   brightness_range=[0.8, 1.2])
+train_datagen = ImageDataGenerator(rescale=1./255)
 val_datagen = ImageDataGenerator(rescale=1./255)
 test_datagen = ImageDataGenerator(rescale=1./255)
 
@@ -75,15 +70,15 @@ model = models.Sequential([
     layers.MaxPooling2D((2, 2)),
 
     # 3. Third Convolution
-    layers.Conv2D(128, (3, 3), activation='relu'),
+    layers.Conv2D(64, (3, 3), activation='relu'),
     layers.BatchNormalization(),
 
     # 4. Global Average Pooling (reduces parameters and overfitting risk)
-    layers.GlobalAveragePooling2D(),  # More efficient than Flatten for small images
+    layers.Flatten(),
 
     # 5. Dense Layers (The Classifier)
-    layers.Dense(128, activation='relu'),
-    layers.Dropout(0.6),
+    layers.Dense(64, activation='relu'),
+    layers.Dropout(0.3),
 
     # 6. Output Layer
     # Use 'softmax' for multi-class classification
@@ -105,6 +100,8 @@ checkpoint_path = os.path.join(BASE_DIR, "hand_gesture_model_best.keras")
 checkpoint = ModelCheckpoint(checkpoint_path, monitor='val_loss', save_best_only=True, verbose=1)
 earlystop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True, verbose=1)
 callbacks = [checkpoint, earlystop]
+
+print(f"Classes found: {train_data.class_indices}")
 
 print("\nTraining the model...")
 history = model.fit(
