@@ -18,9 +18,9 @@ val_dir = os.path.join(dataset_path, "val")
 test_dir = os.path.join(dataset_path, "test")
 
 # Create ImageDataGenerators (rescale because processed images were saved as uint8 0-255)
-train_datagen = ImageDataGenerator(rescale=1./255)
-val_datagen = ImageDataGenerator(rescale=1./255)
-test_datagen = ImageDataGenerator(rescale=1./255)
+train_datagen = ImageDataGenerator()
+val_datagen = ImageDataGenerator()
+test_datagen = ImageDataGenerator()
 
 # Load data in batches
 train_data = train_datagen.flow_from_directory(
