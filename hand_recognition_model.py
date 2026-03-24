@@ -17,36 +17,31 @@ train_dir = os.path.join(dataset_path, "train")
 val_dir = os.path.join(dataset_path, "val")
 test_dir = os.path.join(dataset_path, "test")
 
-# Create ImageDataGenerators (rescale because processed images were saved as uint8 0-255)
-train_datagen = ImageDataGenerator()
-val_datagen = ImageDataGenerator()
-test_datagen = ImageDataGenerator()
-
 # Load data in batches
-train_data = train_datagen.flow_from_directory(
+train_data = tf.keras.utils.image_dataset_from_directory(
     train_dir,
     target_size=(50, 50),
     batch_size=32,
     color_mode='grayscale',
-    class_mode='categorical',
+    label_mode='categorical',
     shuffle=True
 )
 
-val_data = val_datagen.flow_from_directory(
+val_data = tf.keras.utils.image_dataset_from_directory(
     val_dir,
     target_size=(50, 50),
     batch_size=32,
     color_mode='grayscale',
-    class_mode='categorical',
+    label_mode='categorical',
     shuffle=False
 )
 
-test_data = test_datagen.flow_from_directory(
+test_data = tf.keras.utils.image_dataset_from_directory(
     test_dir,
     target_size=(50, 50),
     batch_size=32,
     color_mode='grayscale',
-    class_mode='categorical',
+    label_mode='categorical',
     shuffle=False
 )
 
@@ -58,30 +53,15 @@ with open(os.path.join(BASE_DIR, "class_indices.json"), "w") as f:
     json.dump(train_data.class_indices, f)
 
 model = models.Sequential([
-    # 1. Input Layer + First Convolution
-    layers.Input(shape=(50, 50, 1)),  # Grayscale images have 1 channel
-    layers.Conv2D(32, (3, 3), activation='relu'),
-    layers.BatchNormalization(),
-    layers.MaxPooling2D((2, 2)),
-
-    # 2. Second Convolution (extracts more complex features)
-    layers.Conv2D(64, (3, 3), activation='relu'),
-    layers.BatchNormalization(),
-    layers.MaxPooling2D((2, 2)),
-
-    # 3. Third Convolution
-    layers.Conv2D(64, (3, 3), activation='relu'),
-    layers.BatchNormalization(),
-
-    # 4. Global Average Pooling (reduces parameters and overfitting risk)
+    layers.Rescaling(1./255, input_shape=(50, 50, 1)),  # Normalize pixel values to [0,1]
+    layers.Conv2D(16, 3, padding='same', activation='relu'),
+    layers.MaxPooling2D(),
+    layers.Conv2D(32, 3, padding='same', activation='relu'),
+    layers.MaxPooling2D(),
+    layers.Conv2D(64, 3, padding='same', activation='relu'),
     layers.Flatten(),
-
-    # 5. Dense Layers (The Classifier)
-    layers.Dense(64, activation='relu'),
-    layers.Dropout(0.3),
-
-    # 6. Output Layer
-    # Use 'softmax' for multi-class classification
+    layers.Dropout(0.2),
+    layers.Dense(128, activation='relu'),
     layers.Dense(num_classes, activation='softmax')
 ])
 
@@ -101,13 +81,11 @@ checkpoint = ModelCheckpoint(checkpoint_path, monitor='val_loss', save_best_only
 earlystop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True, verbose=1)
 callbacks = [checkpoint, earlystop]
 
-print(f"Classes found: {train_data.class_indices}")
-
 print("\nTraining the model...")
 history = model.fit(
     train_data,
     validation_data=val_data,
-    epochs=50,
+    epochs=30,
     callbacks=callbacks,
     verbose=1
 )
@@ -199,3 +177,11 @@ plt.close()
 model_save_path = os.path.join(BASE_DIR, "hand_gesture_model.keras")
 model.save(model_save_path)
 print(f"\nModel saved to {model_save_path}")
+
+# Convert the model.
+converter = tf.lite.TFLiteConverter.from_keras_model(model)
+tflite_model = converter.convert()
+
+# Save the model.
+with open('model.tflite', 'wb') as f:
+    f.write(tflite_model)
