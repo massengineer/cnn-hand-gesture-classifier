@@ -24,13 +24,10 @@ for root, dirs, files in os.walk(raw_dir):
             label = os.path.basename(root) 
             
             try:
-                # Step 3: Standardizing (Grayscale, Resize, Normalize)
+                # Step 3: Standardizing (Grayscale, Resize)
                 pil_img = Image.open(path).convert('L') 
                 img_array = np.array(pil_img)
                 img_resized = cv2.resize(img_array, (50, 50))
-                
-                # # Normalizing pixel values to (0,1) range
-                # img_normalized = img_resized / 255.0
                 
                 images.append(img_resized)
                 labels.append(label)
@@ -61,7 +58,7 @@ for set_name, images_set, labels_set in sets_to_save:
         label_dir = os.path.join(output_path, set_name, lbl)
         os.makedirs(label_dir, exist_ok=True)
         
-        # Convert back to 0-255 for saving
+        # Save as 0-255 for visualization (model will normalize later)
         save_img = img.astype(np.uint8)
         filename = f"{i}.jpg"
         cv2.imwrite(os.path.join(label_dir, filename), save_img)

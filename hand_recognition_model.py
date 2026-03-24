@@ -1,6 +1,5 @@
 import tensorflow as tf
 from tensorflow.keras import layers, models
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 import numpy as np
 import os
@@ -20,7 +19,7 @@ test_dir = os.path.join(dataset_path, "test")
 # Load data in batches
 train_data = tf.keras.utils.image_dataset_from_directory(
     train_dir,
-    target_size=(50, 50),
+    image_size=(50, 50),
     batch_size=32,
     color_mode='grayscale',
     label_mode='categorical',
@@ -29,7 +28,7 @@ train_data = tf.keras.utils.image_dataset_from_directory(
 
 val_data = tf.keras.utils.image_dataset_from_directory(
     val_dir,
-    target_size=(50, 50),
+    image_size=(50, 50),
     batch_size=32,
     color_mode='grayscale',
     label_mode='categorical',
@@ -38,7 +37,7 @@ val_data = tf.keras.utils.image_dataset_from_directory(
 
 test_data = tf.keras.utils.image_dataset_from_directory(
     test_dir,
-    target_size=(50, 50),
+    image_size=(50, 50),
     batch_size=32,
     color_mode='grayscale',
     label_mode='categorical',
@@ -46,11 +45,14 @@ test_data = tf.keras.utils.image_dataset_from_directory(
 )
 
 # Determine the number of classes from the training data
-num_classes = len(train_data.class_indices) 
+class_names = train_data.class_names
+print(class_names)
+num_classes = len(class_names)
+print(f"Number of classes: {num_classes}")
 
 # Save class indices for later inference (index -> label mapping)
 with open(os.path.join(BASE_DIR, "class_indices.json"), "w") as f:
-    json.dump(train_data.class_indices, f)
+    json.dump(train_data.class_names, f)
 
 model = models.Sequential([
     layers.Rescaling(1./255, input_shape=(50, 50, 1)),  # Normalize pixel values to [0,1]
@@ -96,14 +98,15 @@ test_loss, test_accuracy = model.evaluate(test_data)
 print(f"Test Loss: {test_loss:.4f}")
 print(f"Test Accuracy: {test_accuracy:.4f}")
 
-# Predict on the entire test set (test_data.shuffle=False to keep order)
-y_true = test_data.classes
+# Predict on the entire test set (test_data yields (images, labels) batches)
+# Extract true labels from the dataset (label_mode='categorical' -> one-hot)
+y_true = np.concatenate([np.argmax(y.numpy(), axis=1) for _, y in test_data], axis=0)
 preds = model.predict(test_data, verbose=1)
-y_pred = preds.argmax(axis=1)
+y_pred = np.argmax(preds, axis=1)
 
 # Print and save confusion matrix and classification report
 cm = confusion_matrix(y_true, y_pred)
-cr = classification_report(y_true, y_pred, target_names=[k for k, v in sorted(train_data.class_indices.items(), key=lambda x: x[1])])
+cr = classification_report(y_true, y_pred, target_names=class_names)
 print("\nConfusion Matrix:\n", cm)
 print("\nClassification Report:\n", cr)
 with open(os.path.join(BASE_DIR, "classification_report.txt"), "w") as f:
@@ -113,7 +116,6 @@ with open(os.path.join(BASE_DIR, "classification_report.txt"), "w") as f:
     f.write(cr)
 
 # Plot confusion matrix (raw counts) and normalized version
-class_names = [k for k, v in sorted(train_data.class_indices.items(), key=lambda x: x[1])]
 tick_marks = np.arange(len(class_names))
 
 # Raw confusion matrix heatmap
