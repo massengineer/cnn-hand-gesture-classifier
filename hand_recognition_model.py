@@ -19,7 +19,7 @@ test_dir = os.path.join(dataset_path, "test")
 # Load data in batches
 train_data = tf.keras.utils.image_dataset_from_directory(
     train_dir,
-    image_size=(50, 50),
+    image_size=(220, 220),
     batch_size=32,
     color_mode='grayscale',
     label_mode='categorical',
@@ -28,7 +28,7 @@ train_data = tf.keras.utils.image_dataset_from_directory(
 
 val_data = tf.keras.utils.image_dataset_from_directory(
     val_dir,
-    image_size=(50, 50),
+    image_size=(220, 220),
     batch_size=32,
     color_mode='grayscale',
     label_mode='categorical',
@@ -37,7 +37,7 @@ val_data = tf.keras.utils.image_dataset_from_directory(
 
 test_data = tf.keras.utils.image_dataset_from_directory(
     test_dir,
-    image_size=(50, 50),
+    image_size=(220, 220),
     batch_size=32,
     color_mode='grayscale',
     label_mode='categorical',
@@ -55,7 +55,7 @@ with open(os.path.join(BASE_DIR, "class_indices.json"), "w") as f:
     json.dump(train_data.class_names, f)
 
 model = models.Sequential([
-    layers.Rescaling(1./255, input_shape=(50, 50, 1)),  # Normalize pixel values to [0,1]
+    layers.Rescaling(1./255, input_shape=(220, 220, 1)),  # Normalize pixel values to [0,1]
     layers.Conv2D(16, 3, padding='same', activation='relu'),
     layers.MaxPooling2D(),
     layers.Conv2D(32, 3, padding='same', activation='relu'),
