@@ -9,7 +9,7 @@ register_heif_opener()
 
 # 1. Setup Directories
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-raw_dir = os.path.join(BASE_DIR, "hand_gesture_dataset_raw")
+raw_dir = os.path.join(BASE_DIR, "hand_gesture_dataset_v2")
 output_path = os.path.join(BASE_DIR, "hand_gesture_dataset_processed")
 
 # 2. Importing and Labeling
