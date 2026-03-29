@@ -30,8 +30,9 @@ for root, dirs, files in os.walk(raw_dir):
                 pil_img = Image.open(path).convert('L') 
                 img_array = np.array(pil_img)
                 img_resized = cv2.resize(img_array, (220, 220))
+                img_equalized = cv2.equalizeHist(img_resized)
                 
-                images.append(img_resized)
+                images.append(img_equalized)
                 labels.append(label)
             except Exception as e:
                 print(f"Error processing {filename}: {e}")
