@@ -51,7 +51,7 @@ num_classes = len(class_names)
 print(f"Number of classes: {num_classes}")
 
 # Save class indices for later inference (index -> label mapping)
-with open(os.path.join(BASE_DIR, "class_indices.json"), "w") as f:
+with open(os.path.join(BASE_DIR, "class_indices_v2.json"), "w") as f:
     json.dump(train_data.class_names, f)
 
 model = models.Sequential([

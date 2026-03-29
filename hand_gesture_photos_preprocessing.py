@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 from pillow_heif import register_heif_opener
 from sklearn.model_selection import train_test_split
-from keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
 import random
 
 register_heif_opener()
@@ -131,7 +131,7 @@ def augment_inplace(processed_base_path, subset='train', augment_probability=0.5
 # To run augmentation from an interactive window or notebook, select and execute
 # the following line (or adjust parameters) instead of running the whole script:
 #
-# augment_inplace(output_path, subset='train', augment_probability=0.5)
+augment_inplace(output_path, subset='train', augment_probability=0.5)
 #
 # This file no longer performs augmentation automatically; call the function
 # manually from the interactive window so you can control which lines execute.
