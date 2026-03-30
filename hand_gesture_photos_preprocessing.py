@@ -29,7 +29,7 @@ for root, dirs, files in os.walk(raw_dir):
                 # Step 3: Standardizing (Grayscale, Resize)
                 pil_img = Image.open(path).convert('L') 
                 img_array = np.array(pil_img)
-                img_resized = cv2.resize(img_array, (220, 220))
+                img_resized = cv2.resize(img_array, (50, 50))
                 img_equalized = cv2.equalizeHist(img_resized)
                 
                 images.append(img_equalized)
@@ -115,7 +115,7 @@ def augment_inplace(processed_base_path, subset='train', augment_probability=0.5
                 if random.random() > augment_probability:
                     continue
 
-                pil = load_img(img_path, color_mode='grayscale', target_size=(220, 220))
+                pil = load_img(img_path, color_mode='grayscale', target_size=(50, 50))
                 x = img_to_array(pil)
                 # datagen.random_transform expects shape (h, w, c)
                 x_aug = datagen.random_transform(x)
