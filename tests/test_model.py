@@ -19,6 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 def load_class_names(base_dir: Path):
     candidates = [
+        base_dir / "class_indices_v3.json",
         base_dir / "class_indices_v2.json",
         base_dir / "class_indices_v1.json",
         base_dir / "class_indices.json",
@@ -40,7 +41,7 @@ def load_class_names(base_dir: Path):
                     # fallback to sorting keys
                     return sorted(list(data.keys()))
     # fallback: infer from train folder
-    train_dir = base_dir / 'hand_gesture_dataset_processed' / 'train'
+    train_dir = base_dir / 'hand_gesture_dataset_processed_9' / 'train'
     if train_dir.exists():
         names = sorted([d.name for d in train_dir.iterdir() if d.is_dir()])
         if names:
@@ -48,9 +49,9 @@ def load_class_names(base_dir: Path):
     return None
 
 
-def prepare_image(path, size=(220,220)):
+def prepare_image(path, size=(50,50)):
     img = Image.open(path).convert('L').resize(size)
-    arr = np.array(img).astype(np.float32) / 255.0
+    arr = np.array(img).astype(np.float32)
     if arr.ndim == 2:
         arr = np.expand_dims(arr, -1)
     return np.expand_dims(arr, 0)  # shape: (1, H, W, 1)
@@ -58,7 +59,7 @@ def prepare_image(path, size=(220,220)):
 
 def main(model_path=None, max_samples=8):
     if model_path is None:
-        model_path = BASE_DIR / 'models' / 'model_8' / 'hand_gesture_model_8.keras'
+        model_path = BASE_DIR / 'models' / 'model_9' / 'hand_gesture_model_9.keras'
     else:
         model_path = Path(model_path)
 
@@ -77,7 +78,7 @@ def main(model_path=None, max_samples=8):
         class_names = [str(i) for i in range(num_out)]
     print('Class names:', class_names)
 
-    test_dir = BASE_DIR / 'hand_gesture_dataset_processed' / 'test'
+    test_dir = BASE_DIR / 'hand_gesture_dataset_processed_9' / 'test'
     if not test_dir.exists():
         raise FileNotFoundError(f"Test directory not found: {test_dir}")
 
@@ -107,9 +108,9 @@ def main(model_path=None, max_samples=8):
         print(f"File: {path.name}  true={true_label}  predicted={pred_name}  prob={prob:.4f}")
         print('Output vector:', np.round(preds[0], 4).tolist())
 
-    print('\nNote: model.input_shape shows (None, 220, 220, 1).')
+    print('\nNote: model.input_shape shows (None, 50, 50, 1).')
     print('`None` is the batch dimension meaning the model accepts any batch size.')
-    print('For a single image you supply shape (1,220,220,1) as this script does.')
+    print('For a single image you supply shape (1,50,50,1) as this script does.')
 
 
 if __name__ == '__main__':

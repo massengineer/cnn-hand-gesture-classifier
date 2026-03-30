@@ -1,0 +1,25 @@
+Confusion Matrix:
+[[10  0  0  0  0  0  0  0]
+ [ 0  9  1  0  0  0  0  0]
+ [ 0  0  9  0  0  1  0  0]
+ [ 0  0  0 10  0  0  0  0]
+ [ 0  0  0  0 10  0  0  0]
+ [ 0  0  0  0  0 10  0  0]
+ [ 0  0  0  0  0  0 10  0]
+ [ 0  0  0  0  0  0  0 10]]
+
+Classification Report:
+                 precision    recall  f1-score   support
+
+     Background       1.00      1.00      1.00        10
+    New Speed 1       1.00      0.90      0.95        10
+    New Speed 2       0.90      0.90      0.90        10
+    New Speed 3       1.00      1.00      1.00        10
+    New Speed 4       1.00      1.00      1.00        10
+New Stop Images       0.91      1.00      0.95        10
+  Pointing Left       1.00      1.00      1.00        10
+ Pointing Right       1.00      1.00      1.00        10
+
+       accuracy                           0.97        80
+      macro avg       0.98      0.97      0.97        80
+   weighted avg       0.98      0.97      0.97        80
