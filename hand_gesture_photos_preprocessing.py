@@ -17,7 +17,8 @@ hands = mp_hands.Hands(static_image_mode=True, max_num_hands=1, min_detection_co
 # 1. Setup Directories
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 raw_dir = os.path.join(BASE_DIR, "hand_gesture_dataset_v3")
-output_path = os.path.join(BASE_DIR, "hand_gesture_dataset_processed_9")
+# always check the output directory is the correct number when creating a new dataset
+output_path = os.path.join(BASE_DIR, "hand_gesture_dataset_processed_10")
 
 # Crop to Hand using MediaPipe
 def crop_to_hand(image, use_mediapipe=True):
