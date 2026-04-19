@@ -6,19 +6,84 @@ from pillow_heif import register_heif_opener
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
 import random
+import mediapipe as mp
 
 register_heif_opener()
+
+# MediaPipe hand detection setup
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands(static_image_mode=True, max_num_hands=1, min_detection_confidence=0.5)
 
 # 1. Setup Directories
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 raw_dir = os.path.join(BASE_DIR, "hand_gesture_dataset_v3")
 output_path = os.path.join(BASE_DIR, "hand_gesture_dataset_processed_9")
 
+# Crop to Hand using MediaPipe
+def crop_to_hand(image, use_mediapipe=True):
+    """
+    Detect hand landmarks and crop image to hand region with padding.
+    If no hand detected or use_mediapipe=False, returns original image.
+    
+    Args:
+        image: BGR image from cv2.imread
+        use_mediapipe: whether to apply hand detection and cropping
+        
+    Returns:
+        Cropped hand region (square) or original image if no hand detected
+    """
+    if not use_mediapipe or image is None:
+        return image
+    
+    try:
+        h, w, _ = image.shape
+        # MediaPipe needs RGB
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        results = hands.process(rgb_image)
+        
+        if results.multi_hand_landmarks:
+            # Use first detected hand
+            hand_lms = results.multi_hand_landmarks[0]
+            
+            # Get bounding box from hand landmarks
+            x_coords = [int(lm.x * w) for lm in hand_lms.landmark]
+            y_coords = [int(lm.y * h) for lm in hand_lms.landmark]
+            
+            x_min, x_max = min(x_coords), max(x_coords)
+            y_min, y_max = min(y_coords), max(y_coords)
+            
+            # Add 20% padding
+            pad_w = int((x_max - x_min) * 0.2)
+            pad_h = int((y_max - y_min) * 0.2)
+            
+            # Create square crop
+            side = max((x_max - x_min) + pad_w, (y_max - y_min) + pad_h)
+            cx, cy = (x_min + x_max) // 2, (y_min + y_max) // 2
+            
+            x1, y1 = max(0, cx - side//2), max(0, cy - side//2)
+            x2, y2 = min(w, x1 + side), min(h, y1 + side)
+            
+            crop = image[y1:y2, x1:x2]
+            
+            if crop.size > 0:
+                return crop
+        
+        return image  # Return original if no hand detected
+    except Exception as e:
+        print(f"Warning: Hand detection failed: {e}")
+        return image
+
 # 2. Importing and Labeling
 images = []
 labels = []
 
-print("Starting Import...")
+# MediaPipe cropping configuration
+USE_MEDIAPIPE_CROP = True  # Set to False to skip hand detection/cropping
+SKIP_NO_HAND_DETECTED = False  # Set to True to discard images with no hand detected
+
+print(f"Starting Import... (MediaPipe cropping: {USE_MEDIAPIPE_CROP})")
+skipped_count = 0
+
 for root, dirs, files in os.walk(raw_dir):
     for filename in files:
         if filename.lower().endswith(('.jpg', '.jpeg', '.png', '.heic')):
@@ -26,16 +91,42 @@ for root, dirs, files in os.walk(raw_dir):
             label = os.path.basename(root) 
             
             try:
-                # Step 3: Standardizing (Grayscale, Resize)
-                pil_img = Image.open(path).convert('L') 
-                img_array = np.array(pil_img)
-                img_resized = cv2.resize(img_array, (50, 50))
+                # Step 1: Load image in color (for MediaPipe detection if enabled)
+                img_bgr = cv2.imread(path)
+                if img_bgr is None:
+                    print(f"Could not read {filename}")
+                    continue
+                
+                # Step 2: Crop to hand if enabled (do this BEFORE resizing for quality)
+                if USE_MEDIAPIPE_CROP:
+                    img_cropped = crop_to_hand(img_bgr, use_mediapipe=True)
+                    if img_cropped is img_bgr:  # No hand was detected
+                        if SKIP_NO_HAND_DETECTED:
+                            skipped_count += 1
+                            continue
+                        # else: use full image
+                else:
+                    img_cropped = img_bgr
+                
+                # Step 3: Convert to grayscale
+                if len(img_cropped.shape) == 3:
+                    img_gray = cv2.cvtColor(img_cropped, cv2.COLOR_BGR2GRAY)
+                else:
+                    img_gray = img_cropped
+                
+                # Step 4: Resize to 50x50
+                img_resized = cv2.resize(img_gray, (50, 50))
+                
+                # Step 5: Histogram equalization
                 img_equalized = cv2.equalizeHist(img_resized)
                 
                 images.append(img_equalized)
                 labels.append(label)
             except Exception as e:
                 print(f"Error processing {filename}: {e}")
+
+if SKIP_NO_HAND_DETECTED:
+    print(f"Skipped {skipped_count} images with no hand detected.")
 
 # 4. Splitting the dataset (70% Train, 20% Val, 10% Test)
 X_train, X_rest, y_train, y_rest = train_test_split(
@@ -71,6 +162,16 @@ print(f"{output_path}/")
 print("  ├── train/ (70%)")
 print("  ├── val/   (20%)")
 print("  └── test/  (10%)")
+
+print("\n" + "="*60)
+print("CONFIGURATION NOTES:")
+print("="*60)
+print(f"  - USE_MEDIAPIPE_CROP: {USE_MEDIAPIPE_CROP}")
+print(f"    Set to True to detect hands and crop before resizing.")
+print(f"    This improves image quality vs. cropping already-small images.")
+print(f"  - SKIP_NO_HAND_DETECTED: {SKIP_NO_HAND_DETECTED}")
+print(f"    Set to True to discard images where no hand was detected.")
+print("="*60)
 
 
 def augment_inplace(processed_base_path, subset='train', augment_probability=0.5,
