@@ -9,7 +9,7 @@ from sklearn.metrics import confusion_matrix, classification_report
 
 # Setup paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-dataset_path = os.path.join(BASE_DIR, "hand_gesture_dataset_processed_9")
+dataset_path = os.path.join(BASE_DIR, "hand_gesture_dataset_processed_10")
 
 # Load data using flow_from_directory (automatically labels based on folder names)
 train_dir = os.path.join(dataset_path, "train")
@@ -105,15 +105,15 @@ preds = model.predict(test_data, verbose=1)
 y_pred = np.argmax(preds, axis=1)
 
 # Create directories for saving model and results
-os.makedirs(os.path.join(BASE_DIR, "models", "model_9"), exist_ok=True)
-os.makedirs(os.path.join(BASE_DIR, "results", "model_9"), exist_ok=True)
+os.makedirs(os.path.join(BASE_DIR, "models", "model_10"), exist_ok=True)
+os.makedirs(os.path.join(BASE_DIR, "results", "model_10"), exist_ok=True)
 
 # Print and save confusion matrix and classification report
 cm = confusion_matrix(y_true, y_pred)
 cr = classification_report(y_true, y_pred, target_names=class_names)
 print("\nConfusion Matrix:\n", cm)
 print("\nClassification Report:\n", cr)
-with open(os.path.join(BASE_DIR, "results", "model_9", "classification_report.txt"), "w") as f:
+with open(os.path.join(BASE_DIR, "results", "model_10", "classification_report.txt"), "w") as f:
     f.write("Confusion Matrix:\n")
     f.write(str(cm))
     f.write("\n\nClassification Report:\n")
@@ -136,7 +136,7 @@ for i, j in np.ndindex(cm.shape):
 plt.ylabel('True label')
 plt.xlabel('Predicted label')
 plt.tight_layout()
-plt.savefig(os.path.join(BASE_DIR, 'results', 'model_9', 'confusion_matrix.png'))
+plt.savefig(os.path.join(BASE_DIR, 'results', 'model_10', 'confusion_matrix.png'))
 plt.close()
 
 # Normalized confusion matrix (rows sum to 1)
@@ -159,7 +159,7 @@ for i, j in np.ndindex(cm_norm.shape):
 plt.ylabel('True label')
 plt.xlabel('Predicted label (normalized)')
 plt.tight_layout()
-plt.savefig(os.path.join(BASE_DIR, 'results', 'model_9', 'confusion_matrix_normalized.png'))
+plt.savefig(os.path.join(BASE_DIR, 'results', 'model_10', 'confusion_matrix_normalized.png'))
 plt.close()
 
 # Plot training curves
@@ -168,7 +168,7 @@ plt.plot(history.history.get('loss', []), label='train_loss')
 plt.plot(history.history.get('val_loss', []), label='val_loss')
 plt.legend()
 plt.title('Loss')
-plt.savefig(os.path.join(BASE_DIR, 'results', 'model_9', 'loss_curve.png'))
+plt.savefig(os.path.join(BASE_DIR, 'results', 'model_10', 'loss_curve.png'))
 plt.close()
 
 plt.figure()
@@ -176,11 +176,11 @@ plt.plot(history.history.get('accuracy', []), label='train_acc')
 plt.plot(history.history.get('val_accuracy', []), label='val_acc')
 plt.legend()
 plt.title('Accuracy')
-plt.savefig(os.path.join(BASE_DIR, 'results', 'model_9', 'accuracy_curve.png'))
+plt.savefig(os.path.join(BASE_DIR, 'results', 'model_10', 'accuracy_curve.png'))
 plt.close()
 
 # Save the trained model
-model_save_path = os.path.join(BASE_DIR, "models", "model_9", "hand_gesture_model_9.keras")
+model_save_path = os.path.join(BASE_DIR, "models", "model_10", "hand_gesture_model_10.keras")
 model.save(model_save_path)
 print(f"\nModel saved to {model_save_path}")
 
@@ -189,5 +189,5 @@ converter = tf.lite.TFLiteConverter.from_keras_model(model)
 tflite_model = converter.convert()
 
 # Save the model.
-with open(os.path.join(BASE_DIR, "models", "model_9", "model_9.tflite"), 'wb') as f:
+with open(os.path.join(BASE_DIR, "models", "model_10", "model_10.tflite"), 'wb') as f:
     f.write(tflite_model)
