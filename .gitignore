@@ -8,9 +8,7 @@ __pycache__/
 venv/
 env/
 .venv/
-computer_vision_speed_control/Lib/
-computer_vision_speed_control/Scripts/
-computer_vision_speed_control/Include/
+computer_vision_speed_control_env/
 
 # Ignore the massive ZIP and raw images
 *.zip
