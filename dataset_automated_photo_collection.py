@@ -1,4 +1,4 @@
-# from _future_ import annotations
+from __future__ import annotations
 
 import argparse
 import os
@@ -178,6 +178,6 @@ def main() -> None:
     cv2.destroyAllWindows()
 
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     os.environ.setdefault("TF_ENABLE_ONEDNN_OPTS", "0")
     main()
