@@ -25,7 +25,7 @@ hands = mp_hands.Hands(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 raw_dir = os.path.join(BASE_DIR, "newdata", "raw")
 # Output directory for processed images
-output_path = os.path.join(BASE_DIR, "hand_gesture_dataset_processed_11")
+output_path = os.path.join(BASE_DIR, "hand_gesture_dataset_processed_12")
 
 
 # Crop to Hand using MediaPipe
@@ -122,9 +122,9 @@ for root, dirs, files in os.walk(raw_dir):
 
                 # --- Step 4: Resize and Equalize ---
                 img_resized = cv2.resize(img_gray, (50, 50))
-                img_equalized = cv2.equalizeHist(img_resized)
+                # img_equalized = cv2.equalizeHist(img_resized)
 
-                images.append(img_equalized)
+                images.append(img_resized)
                 labels.append(label)
 
             except Exception as e:

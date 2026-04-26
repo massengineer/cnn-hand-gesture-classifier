@@ -9,7 +9,7 @@ from sklearn.metrics import confusion_matrix, classification_report
 
 # Setup paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-dataset_path = os.path.join(BASE_DIR, "hand_gesture_dataset_processed_11")
+dataset_path = os.path.join(BASE_DIR, "hand_gesture_dataset_processed_12")
 
 # Load data using flow_from_directory (automatically labels based on folder names)
 train_dir = os.path.join(dataset_path, "train")
@@ -77,19 +77,25 @@ model.summary()
 # Compile the model
 model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
 
+# Create directories for saving model and results
+os.makedirs(os.path.join(BASE_DIR, "models", "model_12"), exist_ok=True)
+os.makedirs(os.path.join(BASE_DIR, "results", "model_12"), exist_ok=True)
+
 # Callbacks: save best model and early stop on no improvement
-checkpoint_path = os.path.join(BASE_DIR, "hand_gesture_model_best.keras")
+checkpoint_path = os.path.join(
+    BASE_DIR, "models", "model_12", "hand_gesture_model_best.keras"
+)
 checkpoint = ModelCheckpoint(
     checkpoint_path, monitor="val_loss", save_best_only=True, verbose=1
 )
 earlystop = EarlyStopping(
-    monitor="val_loss", patience=5, restore_best_weights=True, verbose=1
+    monitor="val_loss", patience=50, restore_best_weights=True, verbose=1
 )
 callbacks = [checkpoint, earlystop]
 
 print("\nTraining the model...")
 history = model.fit(
-    train_data, validation_data=val_data, epochs=30, callbacks=callbacks, verbose=1
+    train_data, validation_data=val_data, epochs=200, callbacks=callbacks, verbose=1
 )
 
 # Evaluate on test data
@@ -104,17 +110,13 @@ y_true = np.concatenate([np.argmax(y.numpy(), axis=1) for _, y in test_data], ax
 preds = model.predict(test_data, verbose=1)
 y_pred = np.argmax(preds, axis=1)
 
-# Create directories for saving model and results
-os.makedirs(os.path.join(BASE_DIR, "models", "model_11"), exist_ok=True)
-os.makedirs(os.path.join(BASE_DIR, "results", "model_11"), exist_ok=True)
-
 # Print and save confusion matrix and classification report
 cm = confusion_matrix(y_true, y_pred)
 cr = classification_report(y_true, y_pred, target_names=class_names)
 print("\nConfusion Matrix:\n", cm)
 print("\nClassification Report:\n", cr)
 with open(
-    os.path.join(BASE_DIR, "results", "model_11", "classification_report.txt"), "w"
+    os.path.join(BASE_DIR, "results", "model_12", "classification_report.txt"), "w"
 ) as f:
     f.write("Confusion Matrix:\n")
     f.write(str(cm))
@@ -143,7 +145,7 @@ for i, j in np.ndindex(cm.shape):
 plt.ylabel("True label")
 plt.xlabel("Predicted label")
 plt.tight_layout()
-plt.savefig(os.path.join(BASE_DIR, "results", "model_11", "confusion_matrix.png"))
+plt.savefig(os.path.join(BASE_DIR, "results", "model_12", "confusion_matrix.png"))
 plt.close()
 
 # Normalized confusion matrix (rows sum to 1)
@@ -172,7 +174,7 @@ plt.ylabel("True label")
 plt.xlabel("Predicted label (normalized)")
 plt.tight_layout()
 plt.savefig(
-    os.path.join(BASE_DIR, "results", "model_11", "confusion_matrix_normalized.png")
+    os.path.join(BASE_DIR, "results", "model_12", "confusion_matrix_normalized.png")
 )
 plt.close()
 
@@ -182,7 +184,7 @@ plt.plot(history.history.get("loss", []), label="train_loss")
 plt.plot(history.history.get("val_loss", []), label="val_loss")
 plt.legend()
 plt.title("Loss")
-plt.savefig(os.path.join(BASE_DIR, "results", "model_11", "loss_curve.png"))
+plt.savefig(os.path.join(BASE_DIR, "results", "model_12", "loss_curve.png"))
 plt.close()
 
 plt.figure()
@@ -190,12 +192,12 @@ plt.plot(history.history.get("accuracy", []), label="train_acc")
 plt.plot(history.history.get("val_accuracy", []), label="val_acc")
 plt.legend()
 plt.title("Accuracy")
-plt.savefig(os.path.join(BASE_DIR, "results", "model_11", "accuracy_curve.png"))
+plt.savefig(os.path.join(BASE_DIR, "results", "model_12", "accuracy_curve.png"))
 plt.close()
 
 # Save the trained model
 model_save_path = os.path.join(
-    BASE_DIR, "models", "model_11", "hand_gesture_model_11.keras"
+    BASE_DIR, "models", "model_12", "hand_gesture_model_12.keras"
 )
 model.save(model_save_path)
 print(f"\nModel saved to {model_save_path}")
@@ -205,5 +207,5 @@ converter = tf.lite.TFLiteConverter.from_keras_model(model)
 tflite_model = converter.convert()
 
 # Save the model.
-with open(os.path.join(BASE_DIR, "models", "model_11", "model_11.tflite"), "wb") as f:
+with open(os.path.join(BASE_DIR, "models", "model_12", "model_12.tflite"), "wb") as f:
     f.write(tflite_model)
